@@ -268,3 +268,78 @@ func (m *mockChatCompleter) ChatComplete(ctx context.Context, req gai.ChatComple
 		},
 	), nil
 }
+
+// TestMetadataSupport verifies that Sample and Result can hold metadata
+func TestMetadataSupport(t *testing.T) {
+	t.Run("Sample with metadata", func(t *testing.T) {
+		sample := eval.Sample{
+			Input:    "test question",
+			Output:   "test answer",
+			Expected: "expected answer",
+			Metadata: map[string]any{
+				"test_id":          "test_123",
+				"expected_keywords": []string{"keyword1", "keyword2"},
+				"category":          "factual",
+			},
+		}
+
+		// Verify metadata is accessible
+		is.Equal(t, "test_123", sample.Metadata["test_id"])
+		keywords, ok := sample.Metadata["expected_keywords"].([]string)
+		is.True(t, ok)
+		is.Equal(t, 2, len(keywords))
+	})
+
+	t.Run("Custom scorer using metadata", func(t *testing.T) {
+		// Custom scorer that checks keywords from metadata
+		keywordScorer := func(s eval.Sample) eval.Result {
+			expectedKeywords, ok := s.Metadata["expected_keywords"].([]string)
+			if !ok || len(expectedKeywords) == 0 {
+				return eval.Result{Score: 1.0, Type: "Keywords"}
+			}
+
+			found := 0
+			for _, kw := range expectedKeywords {
+				if contains(s.Output, kw) {
+					found++
+				}
+			}
+
+			score := eval.Score(float64(found) / float64(len(expectedKeywords)))
+			return eval.Result{
+				Score: score,
+				Type:  "Keywords",
+				Metadata: map[string]any{
+					"keywords_found":   found,
+					"keywords_total":   len(expectedKeywords),
+					"coverage_percent": score * 100,
+				},
+			}
+		}
+
+		sample := eval.Sample{
+			Output: "This answer contains keyword1 but not the other",
+			Metadata: map[string]any{
+				"expected_keywords": []string{"keyword1", "keyword2"},
+			},
+		}
+
+		result := keywordScorer(sample)
+		is.Equal(t, eval.Score(0.5), result.Score)
+		is.Equal(t, 1, result.Metadata["keywords_found"])
+		is.Equal(t, 2, result.Metadata["keywords_total"])
+	})
+}
+
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (len(substr) == 0 || findSubstring(s, substr))
+}
+
+func findSubstring(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
+}

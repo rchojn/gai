@@ -19,6 +19,24 @@ type Sample struct {
 	Expected string
 	Input    string
 	Output   string
+	// Metadata holds arbitrary key-value data for use by custom scorers.
+	// Common uses: expected keywords, source documents, test case metadata.
+	// Optional - scorers should handle nil/empty metadata gracefully.
+	Metadata map[string]any
+}
+
+func (s Sample) GetMetadataString(key string) (string, bool) {
+	if s.Metadata == nil {
+		return "", false
+	}
+
+	value, exists := s.Metadata[key]
+	if !exists {
+		return "", false
+	}
+
+	strValue, ok := value.(string)
+	return strValue, ok
 }
 
 // Score between 0 and 1.
@@ -40,6 +58,10 @@ func (s Score) String() string {
 type Result struct {
 	Score Score
 	Type  string
+	// Metadata holds arbitrary scoring details returned by custom scorers.
+	// Examples: keywords found/missing, source accuracy, polish indicators count.
+	// Optional - standard scorers return nil.
+	Metadata map[string]any
 }
 
 // Scorer produces a [Result] (including a [Score]) for the given [Sample].
