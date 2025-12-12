@@ -25,11 +25,9 @@ Made with ✨sparkles✨ by [maragu](https://www.maragu.dev/): independent softw
 
 These client implementations are available:
 
-- [gai-openai](https://github.com/maragudk/gai-openai)
-- [gai-google](https://github.com/maragudk/gai-google)
-- [gai-anthropic](https://github.com/maragudk/gai-anthropic)
-
-Also, there's an experimental agent at [gaigent](https://github.com/maragudk/gaigent).
+- [openai](./clients/openai)
+- [google](./clients/google)
+- [anthropic](./clients/anthropic)
 
 ### Examples
 
@@ -49,7 +47,7 @@ import (
 	"time"
 
 	"maragu.dev/gai"
-	openai "maragu.dev/gai-openai"
+	"maragu.dev/gai/clients/openai"
 	"maragu.dev/gai/tools"
 )
 
@@ -169,7 +167,7 @@ import (
 	"os"
 
 	"maragu.dev/gai"
-	openai "maragu.dev/gai-openai"
+	"maragu.dev/gai/clients/openai"
 )
 
 type EatArgs struct {
@@ -316,7 +314,7 @@ import (
 	"testing"
 
 	"maragu.dev/gai"
-	openai "maragu.dev/gai-openai"
+	"maragu.dev/gai/clients/openai"
 	"maragu.dev/gai/eval"
 )
 
@@ -397,7 +395,3 @@ Output in the file `evals.jsonl`:
 ```
 
 </details>
-
-## Evals
-
-![Evals](https://api.evals.fun/evals.svg?key=p_public_key_3cce2e69199da00dc5ae46643b42a001&branch=main)
